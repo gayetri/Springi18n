@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class HelloController {
     @RequestMapping(value = {"/"}, method = RequestMethod.GET)
     public String printWelcome(ModelMap model) {
-        model.addAttribute("message", "welcome.springmvc");
-        model.addAttribute("getstartedmessage", "welcome.springmvc");
+        model.addAttribute("message1", "welcome.springmvc");
+        model.addAttribute("message2", "start.springmvc");
         return "hello";
     }
 }

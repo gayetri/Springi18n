@@ -160,8 +160,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <includes>
-                        <include>**/*Tests.java</include>
-                        <include>**/*Spec.groovy</include>
+                        <include>**/*Test.java</include>
                     </includes>
                 </configuration>
             </plugin>
