@@ -35,11 +35,11 @@ public class HelloControllerTest {
 
     private static final String LANGUAGE_KEY = "lang";
     private static final String COUNTRY_KEY = "country";
-    private final String KNOWN_MESSAGE_KEY_1 = "welcome.springmvc";
-    private final String KNOWN_MESSAGE_KEY_2 = "start.springmvc";
-    private final String KNOWN_MODEL_ATTR_1 = "message1";
-    private final String KNOWN_MODEL_ATTR_2 = "message2";
-    private final String KNOWN_I18N_MESSAGE = "Happy learning Spring MVC!";
+    private static final String KNOWN_MESSAGE_KEY_1 = "welcome.springmvc";
+    private static final String KNOWN_MESSAGE_KEY_2 = "start.springmvc";
+    private static final String KNOWN_MODEL_ATTR_1 = "message1";
+    private static final String KNOWN_MODEL_ATTR_2 = "message2";
+    private static final String KNOWN_I18N_MESSAGE = "Happy learning Spring MVC!";
     //----------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------Instance Attributes---------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ public class HelloControllerTest {
     @SuppressWarnings("SpringJavaAutowiringInspection")
     protected WebApplicationContext wac;
     private MockMvc mockMvc;
-    private List<LocaleInfo> localInfoList = new ArrayList<LocaleInfo>();
+    private final List<LocaleInfo> localInfoList = new ArrayList<LocaleInfo>();
 
 //----------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------Private Methods-----------------------------------------------------------
@@ -124,35 +124,35 @@ public class HelloControllerTest {
         final String language = "zh";
         final String country = "CN";
         final LocaleInfo localeInfoObj = new LocaleInfo(language, country);
-        final MvcResult mvcResult1 = mockMvc.perform(get("/?lang=" + language + "_" + country))
+        MvcResult mvcResult = mockMvc.perform(get("/?lang=" + language + "_" + country))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute(KNOWN_MODEL_ATTR_1, KNOWN_MESSAGE_KEY_1))
                 .andExpect(model().attribute(KNOWN_MODEL_ATTR_2, KNOWN_MESSAGE_KEY_2)).andReturn();
-        Cookie[] cookies = mvcResult1.getResponse().getCookies();
+        Cookie[] cookies = mvcResult.getResponse().getCookies();
         assertEquals(CookieLocaleResolver.DEFAULT_COOKIE_NAME, cookies[0].getName());
         assertEquals(language + "_" + country, cookies[0].getValue());
         assertEquals("/", cookies[0].getPath());
-        Locale actualLocaleSet = mvcResult1.getResponse().getLocale();
+        Locale actualLocaleSet = mvcResult.getResponse().getLocale();
         Locale expectedLocale = new Locale(language, country);
         assertEquals(expectedLocale, actualLocaleSet);
 
         //2. Reuse the cookies
         final MockHttpServletRequestBuilder newHttpRequest = MockMvcRequestBuilders.get("/");
-        newHttpRequest.cookie(new Cookie[]{cookies[0]});
-        final MvcResult mvcResult2 = mockMvc.perform(newHttpRequest)
+        newHttpRequest.cookie(cookies[0]);
+        mvcResult = mockMvc.perform(newHttpRequest)
                 .andExpect(status().isOk())
                 .andExpect(model().attribute(KNOWN_MODEL_ATTR_1, KNOWN_MESSAGE_KEY_1))
                 .andExpect(model().attribute(KNOWN_MODEL_ATTR_2, KNOWN_MESSAGE_KEY_2))
                 .andReturn();
-        cookies = mvcResult2.getResponse().getCookies();
+        cookies = mvcResult.getResponse().getCookies();
         assertEquals(0, cookies.length);
 
         //3. Check locales set
-        actualLocaleSet = mvcResult2.getResponse().getLocale();
+        actualLocaleSet = mvcResult.getResponse().getLocale();
         expectedLocale = new Locale(language, country);
         assertEquals(expectedLocale, actualLocaleSet);
-        final String actualModelAttr1 = ((String) mvcResult2.getModelAndView().getModel().get(KNOWN_MODEL_ATTR_1));
-        final String actualModelAttr2 = ((String) mvcResult2.getModelAndView().getModel().get(KNOWN_MODEL_ATTR_2));
+        final String actualModelAttr1 = ((String) mvcResult.getModelAndView().getModel().get(KNOWN_MODEL_ATTR_1));
+        final String actualModelAttr2 = ((String) mvcResult.getModelAndView().getModel().get(KNOWN_MODEL_ATTR_2));
         final String message1 = ((String) localeInfoObj.getResourceBundle().get(KNOWN_MESSAGE_KEY_1));
         final String message2 = ((String) localeInfoObj.getResourceBundle().get(KNOWN_MESSAGE_KEY_2));
 
@@ -171,16 +171,16 @@ public class HelloControllerTest {
 
         //1. Obtain cookies
         LocaleInfo localeInfoObj = new LocaleInfo("zh", "CN");
-        final MvcResult mvcResult1 = mockMvc.perform(get("/?lang=" + localeInfoObj.getLanguage() + "_" +
+        MvcResult mvcResult = mockMvc.perform(get("/?lang=" + localeInfoObj.getLanguage() + "_" +
                 localeInfoObj.getCountry()))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute(KNOWN_MODEL_ATTR_1, KNOWN_MESSAGE_KEY_1))
                 .andExpect(model().attribute(KNOWN_MODEL_ATTR_2, KNOWN_MESSAGE_KEY_2)).andReturn();
-        Cookie[] cookies = mvcResult1.getResponse().getCookies();
+        Cookie[] cookies = mvcResult.getResponse().getCookies();
         assertEquals(CookieLocaleResolver.DEFAULT_COOKIE_NAME, cookies[0].getName());
         assertEquals(localeInfoObj.getLanguage() + "_" + localeInfoObj.getCountry(), cookies[0].getValue());
         assertEquals("/", cookies[0].getPath());
-        Locale actualLocaleSet = mvcResult1.getResponse().getLocale();
+        Locale actualLocaleSet = mvcResult.getResponse().getLocale();
         Locale expectedLocale = new Locale(localeInfoObj.getLanguage(), localeInfoObj.getCountry());
         assertEquals(expectedLocale, actualLocaleSet);
 
@@ -188,22 +188,22 @@ public class HelloControllerTest {
         localeInfoObj = new LocaleInfo("en", "US");
         final MockHttpServletRequestBuilder newHttpRequest =
                 MockMvcRequestBuilders.get("/?lang=" + localeInfoObj.getLanguage() + "_" + localeInfoObj.getCountry());
-        newHttpRequest.cookie(new Cookie[]{cookies[0]});
-        final MvcResult mvcResult2 = mockMvc.perform(newHttpRequest)
+        newHttpRequest.cookie(cookies[0]);
+        mvcResult = mockMvc.perform(newHttpRequest)
                 .andExpect(status().isOk())
                 .andExpect(model().attribute(KNOWN_MODEL_ATTR_1, KNOWN_MESSAGE_KEY_1))
                 .andExpect(model().attribute(KNOWN_MODEL_ATTR_2, KNOWN_MESSAGE_KEY_2)).andReturn();
-        cookies = mvcResult2.getResponse().getCookies();
+        cookies = mvcResult.getResponse().getCookies();
         assertEquals(CookieLocaleResolver.DEFAULT_COOKIE_NAME, cookies[0].getName());
         assertEquals(localeInfoObj.getLanguage() + "_" + localeInfoObj.getCountry(), cookies[0].getValue());
         assertEquals("/", cookies[0].getPath());
 
         //3. Check locales set
-        actualLocaleSet = mvcResult2.getResponse().getLocale();
+        actualLocaleSet = mvcResult.getResponse().getLocale();
         expectedLocale = new Locale(localeInfoObj.getLanguage(), localeInfoObj.getCountry());
         assertEquals(expectedLocale, actualLocaleSet);
-        final String actualModelAttr1 = ((String) mvcResult2.getModelAndView().getModel().get(KNOWN_MODEL_ATTR_1));
-        final String actualModelAttr2 = ((String) mvcResult2.getModelAndView().getModel().get(KNOWN_MODEL_ATTR_2));
+        final String actualModelAttr1 = ((String) mvcResult.getModelAndView().getModel().get(KNOWN_MODEL_ATTR_1));
+        final String actualModelAttr2 = ((String) mvcResult.getModelAndView().getModel().get(KNOWN_MODEL_ATTR_2));
         final String message1 = ((String) localeInfoObj.getResourceBundle().get(KNOWN_MESSAGE_KEY_1));
         final String message2 = ((String) localeInfoObj.getResourceBundle().get(KNOWN_MESSAGE_KEY_2));
 
@@ -220,15 +220,14 @@ public class HelloControllerTest {
      */
     @Test
     public void testWelcomePageModelAttrsForDefaultLocaleNotSetInCookie() throws Exception {
-        for (final LocaleInfo localeInfoObj : localInfoList) {
-            final String language = localeInfoObj.getLanguage();
+
             final MvcResult mvcResult = mockMvc.perform(get("/"))
                     .andExpect(status().isOk())
                     .andExpect(model().attribute(KNOWN_MODEL_ATTR_1, KNOWN_MESSAGE_KEY_1))
                     .andExpect(model().attribute(KNOWN_MODEL_ATTR_2, KNOWN_MESSAGE_KEY_2)).andReturn();
             final Cookie[] cookies = mvcResult.getResponse().getCookies();
             assertEquals(0, cookies.length);
-        }
+
     }
 
 //----------------------------------------------------------------------------------------------------------------------
